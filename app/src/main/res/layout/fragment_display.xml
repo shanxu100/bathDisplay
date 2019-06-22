@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:my="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        android:background="@drawable/background"
+        android:baselineAligned="false">
+        <!--左边大屏-->
+
+        <LinearLayout
+            android:id="@+id/ll_left_screen"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:background="@drawable/top_title_background"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="344px"
+                    android:layout_height="48px"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="53px"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/top_title_image" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="25dp"
+                    android:gravity="right"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_toilet_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="bottom"
+                        android:text="克劳迪生产车间智能公厕"
+                        android:textColor="@color/white"
+                        android:textSize="50px" />
+
+                    <TextView
+                        android:id="@+id/tv_manage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="top"
+                        android:text="地址:广东省中山市小榄镇盛丰工业区泰弘中路5号"
+
+                        android:textColor="@color/white"
+                        android:textSize="30px" />
+
+                    <!--<TextView-->
+                    <!--android:id="@+id/tv_committee"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_below="@id/tv_toilet_name"-->
+                    <!--android:layout_toRightOf="@id/tv_manage"-->
+                    <!--android:text=""-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:textSize="14sp" />-->
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.3"
+                android:background="@color/transparent">
+
+                <Button
+                    android:id="@+id/btn_setting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_alignParentRight="true"
+                    android:gravity="right"
+                    android:background="@color/transparent"
+                    android:text="设置"
+                    android:textColor="@color/white" />
+            </RelativeLayout>
+
+
+            <FrameLayout
+                android:id="@+id/fl_webview"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="4"></FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.2">
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.1"
+                    android:background="@color/transparent">
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:background="@drawable/background_disable">
+
+                        <ImageView
+                            android:id="@+id/iv_disable_state"
+                            android:layout_width="115px"
+                            android:layout_height="110px"
+                            android:src="@drawable/disable_state_free"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="40px"
+                            android:layout_centerVertical="true" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.7">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:orientation="horizontal"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginBottom="12px">
+
+
+                            <ImageView
+                                android:layout_width="115px"
+                                android:layout_height="110px"
+                                android:layout_gravity="bottom"
+                                android:scaleType="fitEnd"
+                                android:src="@drawable/toilet_state_free" />
+
+                            <ImageView
+                                android:layout_width="115px"
+                                android:layout_height="110px"
+                                android:layout_gravity="bottom"
+                                android:scaleType="fitEnd"
+                                android:src="@drawable/toilet_state_using" />
+
+                            <ImageView
+                                android:layout_width="105px"
+                                android:layout_height="110px"
+                                android:layout_gravity="bottom"
+                                android:scaleType="fitEnd"
+                                android:src="@drawable/toilet_state_abnormal" />
+                        </LinearLayout>
+                    </RelativeLayout>
+
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.2">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:gravity="bottom|center_horizontal">
+
+                            <TextView
+                                android:id="@+id/men_toilet_temp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line1_1"
+                                android:background="@color/transparent"
+                                android:text="男厕位总数: "
+                                android:textColor="#8AB0DF"
+                                android:textSize="27px" />
+
+                            <TextView
+                                android:id="@+id/tv_men_toilet_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line1_1"
+                                android:layout_marginBottom="0dp"
+                                android:layout_toRightOf="@id/men_toilet_temp"
+                                android:background="@color/transparent"
+                                android:text="--"
+                                android:textColor="#7EBFAB"
+                                android:textSize="27px" />
+
+                            <ImageView
+                                android:id="@+id/iv_line1_1"
+                                android:layout_width="160px"
+                                android:layout_height="11px"
+                                android:layout_alignParentBottom="true"
+                                android:layout_centerHorizontal="true"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/bottom_line_1" />
+                        </RelativeLayout>
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/women_toilet_temp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line1_2"
+                                android:background="@color/transparent"
+                                android:text="女厕位总数: "
+                                android:textColor="#8AB0DF"
+                                android:textSize="27px" />
+
+                            <TextView
+                                android:id="@+id/tv_women_toilet_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line1_2"
+                                android:layout_toRightOf="@id/women_toilet_temp"
+                                android:background="@color/transparent"
+                                android:text="--"
+                                android:textColor="#7EBFAB"
+                                android:textSize="27px" />
+
+                            <ImageView
+                                android:id="@+id/iv_line1_2"
+                                android:layout_width="160px"
+                                android:layout_height="11px"
+                                android:layout_alignParentBottom="true"
+                                android:layout_centerHorizontal="true"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/bottom_line_1" />
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.5">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_centerVertical="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:gravity="bottom|center_horizontal">
+
+                            <TextView
+                                android:id="@+id/men_toilet_remain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line2_1"
+                                android:background="@color/transparent"
+                                android:text="当前男厕可用厕位数: "
+                                android:textColor="#8AB0DF"
+                                android:textSize="27px" />
+
+                            <TextView
+                                android:id="@+id/tv_men_toilet_remain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line2_1"
+                                android:layout_toRightOf="@id/men_toilet_remain"
+                                android:background="@color/transparent"
+                                android:text="--"
+                                android:textColor="#7EBFAB"
+                                android:textSize="27px" />
+
+                            <ImageView
+                                android:id="@+id/iv_line2_1"
+                                android:layout_width="260px"
+                                android:layout_height="11px"
+                                android:layout_alignParentBottom="true"
+                                android:layout_centerHorizontal="true"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/bottom_line_2" />
+                        </RelativeLayout>
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/women_toilet_remain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line2_2"
+                                android:background="@color/transparent"
+                                android:text="当前女厕可用厕位数: "
+                                android:textColor="#8AB0DF"
+                                android:textSize="27px" />
+
+                            <TextView
+                                android:id="@+id/tv_women_toilet_remain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_above="@id/iv_line2_2"
+                                android:layout_toRightOf="@id/women_toilet_remain"
+                                android:background="@color/transparent"
+                                android:text="--"
+                                android:textColor="#7EBFAB"
+                                android:textSize="27px" />
+
+                            <ImageView
+                                android:id="@+id/iv_line2_2"
+                                android:layout_width="260px"
+                                android:layout_height="11px"
+                                android:layout_alignParentBottom="true"
+                                android:layout_centerHorizontal="true"
+                                android:scaleType="fitXY"
+                                android:src="@drawable/bottom_line_2" />
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.2"
+                android:background="@color/transparent">
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+        <!--右边大屏-->
+
+        <LinearLayout
+            android:id="@+id/ll_right_screen"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center_vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/iv_line_5"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="bottom|center_vertical">
+
+                    <edu.scut.luluteam.bathdisplay.ui.TextClock
+                        android:id="@+id/tc_time_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/tc_time_clock"
+                        android:layout_centerHorizontal="true"
+                        android:gravity="bottom"
+                        android:textColor="#78C4F5"
+                        android:textSize="55px"
+                        my:format24Hour="yyyy.MM.dd EEEE" />
+
+                    <edu.scut.luluteam.bathdisplay.ui.TextClock
+                        android:id="@+id/tc_time_clock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:gravity="bottom"
+                        android:textColor="@color/white"
+                        android:textSize="64px"
+                        my:format24Hour="HH:mm:ss" />
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/iv_line_5"
+                    android:layout_width="470px"
+                    android:layout_height="20px"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/bottom_line_5" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center_horizontal">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/iv_line3_1"
+                    android:layout_alignStart="@id/iv_line3_1"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/headcount_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/water_meter_temp"
+                        android:background="@color/transparent"
+                        android:text="今日人流量 : "
+                        android:textColor="#8AB0DF"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_headcount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/water_meter_temp"
+                        android:layout_toRightOf="@id/headcount_temp"
+                        android:background="@color/transparent"
+                        android:text="----人"
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/water_meter_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/electric_meter_temp"
+                        android:background="@color/transparent"
+                        android:text="用水量:"
+                        android:textColor="#8AB0DF"
+                        android:textSize="32px"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/tv_water_meter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/electric_meter_temp"
+                        android:layout_toRightOf="@id/water_meter_temp"
+                        android:background="@color/transparent"
+                        android:text="----L/s"
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/electric_meter_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/transparent"
+                        android:text="用电量:"
+                        android:textColor="#8AB0DF"
+                        android:textSize="32px"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/tv_electric_meter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_toRightOf="@id/electric_meter_temp"
+                        android:background="@color/transparent"
+                        android:text="----Kw.h"
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px"
+                        android:visibility="invisible" />
+
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/iv_line3_1"
+                    android:layout_width="400px"
+                    android:layout_height="16px"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/bottom_line_3" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.5"
+                android:gravity="center_horizontal">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/iv_line3_2"
+                    android:layout_alignStart="@id/iv_line3_2"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/temperature_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/tv_humidity"
+                        android:background="@color/transparent"
+                        android:text="温度 : "
+                        android:textColor="#8AB0DF"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_temperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/tv_humidity"
+                        android:layout_toRightOf="@id/temperature_temp"
+                        android:background="@color/transparent"
+                        android:text="20°C"
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/humidity_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/transparent"
+                        android:text="湿度 : "
+                        android:textColor="#8AB0DF"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_humidity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_toRightOf="@id/humidity_temp"
+                        android:background="@color/transparent"
+                        android:text="0%"
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px" />
+
+                </RelativeLayout>
+
+
+                <ImageView
+                    android:id="@+id/iv_line3_2"
+                    android:layout_width="400px"
+                    android:layout_height="16px"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/bottom_line_3" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="28px"
+                    android:layout_height="82px"
+                    android:layout_above="@id/iv_line3_3"
+                    android:layout_alignStart="@id/iv_line3_3"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/man_pic" />
+
+                <RelativeLayout
+                    android:id="@+id/rl_men_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/iv_line3_3"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/nh3_man_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/h2s_man_temp"
+                        android:background="@color/transparent"
+                        android:text="氨气(NH3) : "
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_man_nh3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/h2s_man_temp"
+                        android:layout_toRightOf="@id/nh3_man_temp"
+                        android:background="@color/transparent"
+                        android:text="----ppm"
+                        android:textColor="#EABB31"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/h2s_man_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/transparent"
+                        android:text="硫化氢(H2S) : "
+                        android:textColor="#7EBFAB"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_man_h2s"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_toRightOf="@id/h2s_man_temp"
+                        android:background="@color/transparent"
+                        android:text="----ppm"
+                        android:textColor="#EABB31"
+                        android:textSize="32px" />
+
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/iv_man_detector_state"
+                    android:layout_width="50px"
+                    android:layout_height="38px"
+                    android:layout_above="@id/iv_line3_3"
+                    android:layout_toRightOf="@+id/rl_men_temp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/state_abnormal"
+                    android:visibility="invisible" />
+
+                <ImageView
+                    android:id="@+id/iv_line3_3"
+                    android:layout_width="400px"
+                    android:layout_height="16px"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/bottom_line_3" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:gravity="center_horizontal">
+
+
+                <ImageView
+                    android:layout_width="28px"
+                    android:layout_height="82px"
+                    android:layout_above="@id/iv_line3_4"
+                    android:layout_alignStart="@+id/iv_line3_4"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/woman_pic" />
+
+                <RelativeLayout
+                    android:id="@+id/rl_women_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/iv_line3_4"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:id="@+id/nh3_woman_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/h2s_woman_temp"
+                        android:background="@color/transparent"
+                        android:text="氨气(NH3) : "
+                        android:textColor="#DD1079"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_woman_nh3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@id/h2s_woman_temp"
+                        android:layout_toRightOf="@id/nh3_woman_temp"
+                        android:background="@color/transparent"
+                        android:text="----ppm"
+                        android:textColor="#EABB31"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/h2s_woman_temp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/transparent"
+                        android:text="硫化氢(H2S) : "
+                        android:textColor="#DD1079"
+                        android:textSize="32px" />
+
+                    <TextView
+                        android:id="@+id/tv_woman_h2s"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_toRightOf="@id/h2s_woman_temp"
+                        android:background="@color/transparent"
+                        android:text="----ppm"
+                        android:textColor="#EABB31"
+                        android:textSize="32px" />
+
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/iv_woman_detector_state"
+                    android:layout_width="50px"
+                    android:layout_height="38px"
+                    android:layout_above="@id/iv_line3_4"
+                    android:layout_toRightOf="@+id/rl_women_temp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/state_abnormal"
+                    android:visibility="invisible" />
+
+                <ImageView
+                    android:id="@+id/iv_line3_4"
+                    android:layout_width="400px"
+                    android:layout_height="16px"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="44px"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/bottom_line_3" />
+
+            </RelativeLayout>
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <!--底部图片-->
+        <LinearLayout
+            android:id="@+id/ll_bottom_img"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bottom_image2"
+            android:orientation="horizontal"
+            android:visibility="visible" />
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+        </android.support.v4.view.ViewPager>
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,187 @@
+package edu.scut.luluteam.bathdisplay.display;
+
+import android.app.Dialog;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import edu.scut.luluteam.bathdisplay.R;
+import edu.scut.luluteam.bathdisplay.data.DeviceAdapter;
+import edu.scut.luluteam.bathdisplay.ui.webview.WebViewManager;
+import edu.scut.luluteam.bathdisplay.utils.SharedPreferencesUtil;
+import edu.scut.luluteam.serialportlibrary.Device;
+import edu.scut.luluteam.serialportlibrary.SerialPortFinder;
+
+/**
+ * @author Guan
+ */
+public class DisplayFragment extends Fragment implements DisplayContract.View {
+
+    private DisplayContract.Presenter mPresenter;
+
+
+    private Button btn_test3;
+    private Button btn_clear;
+    private Button btn_choose_serialports;
+    private ListView listView;
+    private Dialog dialog=null;
+
+    private TextView tvShowFrame;
+
+    private RelativeLayout rl_webview;
+    private WebViewManager webviewManager;
+
+    ArrayList<Device> devices=null;
+    Device device=null;
+    File file=null;
+
+
+
+
+    public DisplayFragment() {
+        // Required empty public constructor
+    }
+
+    public static DisplayFragment newInstance() {
+        DisplayFragment fragment = new DisplayFragment();
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_display, container, false);
+
+        btn_test3 = (Button) view.findViewById(R.id.btn_test3);
+        btn_test3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.sendTestMsg();
+            }
+        });
+
+        tvShowFrame = (TextView) view.findViewById(R.id.tv_show_frame);
+        btn_clear = (Button) view.findViewById(R.id.clear);
+        btn_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvShowFrame.setText("");
+            }
+        });
+
+        btn_choose_serialports= (Button) view.findViewById(R.id.btn_choose_serialports);
+        btn_choose_serialports.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showChooseDialog();
+            }
+        });
+        rl_webview = (RelativeLayout) view.findViewById(R.id.rl_webview);
+        webviewManager = new WebViewManager(getContext(), rl_webview, "file:///android_asset/androidWebSite/html/stats/WuHan.html");
+        webviewManager.initWebView();
+
+
+
+        //进行一系列的初始化
+        mPresenter.subscribe();
+        //写到displaypresenter的openserialport（）里？？
+//        String path=SharedPreferencesUtil.getString(getContext(),"path");
+//        if(TextUtils.isEmpty(path)||path==null){
+//            mPresenter.openSerialPort();
+//            Toast.makeText(getContext(),"打开默认串口",Toast.LENGTH_SHORT);
+//            SharedPreferencesUtil.putString(getContext(),"path","/dev/ttyS1");
+//        }else {
+//            Device device = new Device("name", "root", new File(path));
+//            mPresenter.openSerialPort(device);
+//            Toast.makeText(getContext(),"打开的串口路径为"+path,Toast.LENGTH_SHORT);
+//        }
+
+
+        return view;
+    }
+
+    public void showChooseDialog() {
+
+        dialog=new Dialog(getContext());
+        //获取串口列表view，并嵌入在dialog里
+        View contentView = View.inflate(getContext(), R.layout.content_dialog, null);
+        dialog.setContentView(contentView);
+        //获取listview
+        listView = (ListView) contentView.findViewById(R.id.listview);
+        SerialPortFinder serialPortFinder = new SerialPortFinder();
+        devices = serialPortFinder.getDevices();
+        //获取adapter
+        DeviceAdapter deviceAdapter=new DeviceAdapter(getContext(), devices);
+        Toast.makeText(getContext(),"devices的个数为"+devices.size(),Toast.LENGTH_SHORT).show();
+        //对listview设置adapter
+        listView.setAdapter(deviceAdapter);
+        //设置监听事件
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                device=devices.get(position);
+                file = devices.get(position).getFile();
+                String path = file.getAbsolutePath();
+                //保存被点击串口的路径
+                SharedPreferencesUtil.putString(getContext(),"path",path);
+                //关闭之前的串口
+                mPresenter.closeSerialPort();
+                //打开点击的串口
+                mPresenter.openSerialPort(device);
+                Toast.makeText(getContext(),"串口的路径为"+path,Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+
+
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //销毁
+        mPresenter.unsubscribe();
+    }
+
+    @Override
+    public void setPresenter(DisplayContract.Presenter presenter) {
+        this.mPresenter = presenter;
+    }
+
+
+    @Override
+    public void updateSampleText(String text) {
+        tvShowFrame.append("\n" + text);
+    }
+
+    @Override
+    public void updateShowFrame(String text) {
+        tvShowFrame.append("\n" + text);
+    }
+
+    @Override
+    public void updateWebview(String text) {
+        webviewManager.onNewMsg("androidCallFunction", text);
+    }
+}

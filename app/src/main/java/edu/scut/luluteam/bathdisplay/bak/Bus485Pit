@@ -1,0 +1,752 @@
+package edu.scut.luluteam.bathdisplay.model;
+
+import android.util.Log;
+
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import edu.scut.luluteam.bathdisplay.constant.MsgConstant;
+import edu.scut.luluteam.bathdisplay.utils.TimeUtil;
+import edu.scut.luluteam.bathdisplay.utils.TransHelper;
+
+
+/**
+ * 485设备 蹲位/便池 整体状态数据
+ *
+ * @author Guan
+ * @date Created on 2018/6/13
+ */
+@Deprecated
+public class Bus485Pit {
+    public static final int MAX_PIT = 60;
+    private static final byte msgType = MsgConstant.msgType_485_Pit;
+    private static final String TAG = "Bus485Pit";
+    private static final String[] LEVEL_STR = new String[]{"优", "良", "中", "差"};
+    /**
+     * 公共数据
+     */
+    public ItemCommon itemCommon;
+    /**
+     * 以下9个list分别对应index=1 的数据
+     */
+    public List<ItemPit> manList;
+    public List<ItemPit> womanList;
+    public List<ItemPit> disabledList;
+    public List<ItemPit> manWashList;
+    public List<ItemPit> womanWashList;
+    public List<ItemPit> disabledWashList;
+    public List<ItemPit> manGasList;
+    public List<ItemPit> womanGasList;
+    public List<ItemPit> disabledGasList;
+    public String gasLevelStr = "优";
+    public String cleanessLevelStr = "优";
+    /**
+     * 对应index=2的坑位详情，表示是否有污物，以及污物类型是什么
+     */
+    public List<ItemPit> manDetailList;
+    public List<ItemPit> womanDetailList;
+    public List<ItemPit> disabledDetailList;
+    /**
+     * 对应index=3的气体探测器详情，表示各种气味类型数据
+     */
+    public List<ItemGas> manGasDetailList;
+    public List<ItemGas> womanGasDetailList;
+    public List<ItemGas> disabledGasDetailList;
+    private String toiletId;
+    private String time;
+    private long timestamp;
+    /**
+     * index=0 : 请求公共数据
+     * index=1 ： 56+56 有人无人、正常异常、清洁度等级、气味等级
+     * index=2  ：蹲位详情
+     * index=3 ： 气味详情
+     */
+    private int index;
+
+    public static byte getMsgType() {
+        return msgType;
+    }
+
+    /**
+     * 将等级数字转变成"优良中差"文字
+     *
+     * @param level 值为0,1,2,3不等，分别表示0%，25%，50%，75%
+     * @return
+     */
+    private static String level2Str(int level) {
+        //其他默认
+        return LEVEL_STR[level];
+    }
+
+    public String getToiletId() {
+        return toiletId;
+    }
+
+    public void setToiletId(String toiletId) {
+        this.toiletId = toiletId;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    /**
+     * 将model转化为json，方便存入数据库
+     *
+     * @return
+     */
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
+
+    public static class Builder {
+        public static Bus485Pit parseByte(byte[] msg) {
+            Bus485Pit bus485Pit = new Bus485Pit();
+            //根据具体的协议和数据结构，开始解析
+            int readIndex = 1;
+            String toiletId = TransHelper.getToiletId(msg, readIndex, 8);
+            readIndex += 8;
+            String time = TransHelper.getRecordInfoTime(msg, readIndex, 6);
+            readIndex += 6;
+
+            bus485Pit.setToiletId(toiletId);
+            bus485Pit.setTime(time);
+            bus485Pit.setTimestamp(TimeUtil.getTimestamp(time));
+
+            int index = TransHelper.getIntValue(msg, readIndex, 1);
+            bus485Pit.setIndex(index);
+            readIndex += 1;
+            if (index == 0) {
+                //读公共数据
+                ItemCommon itemCommon = buildItemCommon(msg, readIndex);
+                readIndex += 18;
+                bus485Pit.itemCommon = itemCommon;
+            } else if (index == 1) {
+                readIndex = buildSimpleAllPit(msg, readIndex, bus485Pit);
+                // 计算清洁度，气味等级
+                calculateLevel(bus485Pit);
+            } else if (index == 2) {
+                // 读蹲位详情
+                readIndex = buildDetailAllPit(msg, readIndex, bus485Pit);
+            } else if (index == 3) {
+                // 读气味探测器详细数据
+                readIndex = buildDetailAllGas(msg, readIndex, bus485Pit);
+            } else {
+                //未知index
+                Log.e(TAG, "未知index：" + index);
+            }
+
+//            logger.info(bus485Pit.toJson());
+            return bus485Pit;
+        }
+
+
+        /**
+         * 解析公共数据
+         *
+         * @param bytes
+         * @param offset
+         * @return
+         */
+        private static ItemCommon buildItemCommon(byte[] bytes, int offset) {
+            int count = 18;
+            ItemCommon itemCommon = new ItemCommon();
+            itemCommon.version = TransHelper.getIntValue(bytes, offset, 2);
+            offset += 2;
+            itemCommon.hostId = TransHelper.getIntValue(bytes, offset, 2);
+            offset += 2;
+
+            //男厕坑位数量
+            itemCommon.numManSit = TransHelper.getIntValue(bytes, offset, 1);
+            offset += 1;
+            //男厕便池数量
+            itemCommon.numManStand = TransHelper.getIntValue(bytes, offset, 1);
+            offset += 1;
+            //女厕坑位数量
+            itemCommon.numWomanSit = TransHelper.getIntValue(bytes, offset, 1);
+            offset += 1;
+            //残卫坑位数量
+            itemCommon.numDisabledSit = TransHelper.getIntValue(bytes, offset, 1);
+            offset += 1;
+            //残卫便池数量
+            itemCommon.numDisabledStand = TransHelper.getIntValue(bytes, offset, 1);
+            offset += 1;
+
+            //气体探测器数量
+            itemCommon.numManGas = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemCommon.numWomanGas = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemCommon.numDisabledGas = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+
+            //冲洗设备数量
+//            itemCommon.numManPitWash = TransHelper.getIntValue(bytes, offset, 1);
+            itemCommon.numManPitWash = itemCommon.numManSit;
+
+            offset++;
+            itemCommon.numManRoadWash = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+//            itemCommon.numWomanPitWash = TransHelper.getIntValue(bytes, offset, 1);
+            itemCommon.numWomanPitWash = itemCommon.numWomanSit;
+            offset++;
+            itemCommon.numWomanRoadWash = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+//            itemCommon.numDisabledPitWash = TransHelper.getIntValue(bytes, offset, 1);
+            itemCommon.numDisabledPitWash = itemCommon.numDisabledSit;
+            offset++;
+            itemCommon.numDisabledRoadWash = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+
+            return itemCommon;
+        }
+
+        /**
+         * 解析单个坑位的数据
+         *
+         * @param bytes
+         * @param offset
+         * @return
+         */
+        private static ItemPit buildDetailItemPit(byte[] bytes, int offset) {
+            int count = 2;
+            ItemPit itemPit = new ItemPit();
+            itemPit.ordureType = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemPit.ordurePoision = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            return itemPit;
+        }
+
+
+        /**
+         * 解析单个气体探测器详情
+         *
+         * @param bytes
+         * @param offset
+         * @return
+         */
+        public static ItemGas buildDetailItemGas(byte[] bytes, int offset) {
+            int count = 6;
+            ItemGas itemGas = new ItemGas();
+            //湿度
+            //温度
+            //H2S
+            //NH3
+            //save
+            //value
+            //
+            itemGas.temperature = (int) bytes[offset];
+            offset++;
+            itemGas.humidity = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemGas.NH3 = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemGas.H2S = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemGas.value = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+            itemGas.save = TransHelper.getIntValue(bytes, offset, 1);
+            offset++;
+
+            return itemGas;
+        }
+
+        /**
+         * 只解析有人无人、正常异常的数据
+         * 通过 offset + 56 解析蹲位清洁度、气体等级
+         * 按照bit划分，1 byte划分4组，每两个bit表示
+         *
+         * @param bytes
+         * @param offset
+         * @return
+         */
+        private static ItemPit[] buildSimpleItemPit(byte[] bytes, int offset, int deviceIndex) {
+            ItemPit[] pits = new ItemPit[4];
+            byte b = bytes[offset];
+            byte b2 = bytes[offset + 56];
+//            byte b3 = bytes[offset + 56 + 50];
+
+            for (int i = 0; i < 4; i++) {
+                pits[i] = new ItemPit();
+                pits[i].used = TransHelper.getBitAction(b, i * 2);
+                pits[i].work = TransHelper.getBitAction(b, i * 2 + 1);
+                if (deviceIndex < 50) {
+                    pits[i].cleaness = TransHelper.get2BitValue(b2, i);
+                } else {
+                    pits[i].gasLevel = TransHelper.get2BitValue(b2, i);
+                }
+            }
+            return pits;
+        }
+
+
+        /**
+         * 解析index=1
+         * 简化版：只显示蹲位有人无人、正常异常
+         *
+         * @param msg
+         * @param readIndex
+         * @param bus485Pit
+         * @return
+         */
+        private static int buildSimpleAllPit(byte[] msg, int readIndex, Bus485Pit bus485Pit) {
+
+            int manSitIndexStart = 0;
+            int manSitIndexEnd = 59;
+
+            int manStandIndexStart = 60;
+            int manStandIndexEnd = 89;
+
+            int womanSitIndexStart = 90;
+            int womanSitIndexEnd = 149;
+
+            int disabledSitIndexStart = 150;
+            int disabledSitIndexEnd = 159;
+
+            int disabledStandIndexStart = 160;
+            int disabledStandIndexEnd = 169;
+
+            int manWashIndexStart = 170;
+            int manWashIndexEnd = 179;
+            int womanWashIndexStart = 180;
+            int womanWashIndexEnd = 189;
+            int disabledWashIndexStart = 190;
+            int disabledWashIndexEnd = 199;
+
+            int manGasIndexStart = 200;
+            int manGasIndexEnd = 206;
+            int womanGasIndexStart = 207;
+            int womanGasIndexEnd = 212;
+            int disabledGasIndexStart = 213;
+            int disabledGasIndexEnd = 219;
+
+            bus485Pit.manList = new ArrayList<>(MAX_PIT);
+            bus485Pit.womanList = new ArrayList<>(MAX_PIT);
+            bus485Pit.disabledList = new ArrayList<>(MAX_PIT);
+
+            bus485Pit.manWashList = new ArrayList<>(MAX_PIT);
+            bus485Pit.womanWashList = new ArrayList<>(MAX_PIT);
+            bus485Pit.disabledWashList = new ArrayList<>(MAX_PIT);
+
+            bus485Pit.manGasList = new ArrayList<>(MAX_PIT);
+            bus485Pit.womanGasList = new ArrayList<>(MAX_PIT);
+            bus485Pit.disabledGasList = new ArrayList<>(MAX_PIT);
+
+            List<ItemPit> tempList = new ArrayList<>(255);
+
+
+            int tempIndex = readIndex;
+            for (int i = 0; i < 56; i++) {
+                byte b = msg[tempIndex];
+                msg[tempIndex] = msg[tempIndex + 1];
+                msg[tempIndex + 1] = b;
+                tempIndex += 2;
+            }
+
+
+            //0-219,共220个设备，包括蹲位便池、冲水、气体传感器数据
+            for (int i = 0; i < 55; i++) {
+                Collections.addAll(tempList, buildSimpleItemPit(msg, readIndex, i));
+                readIndex++;
+            }
+
+
+            //跳过一个网关设备
+            readIndex++;
+
+            //解析清洁度和气味等级的数据，在解析设备状态时，一并解析了
+
+
+            //男厕坑位
+            for (int i = manSitIndexStart; i <= manSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.manList.add(itemPit);
+            }
+
+            //男厕便池
+            for (int i = manStandIndexStart; i <= manStandIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 1;
+                bus485Pit.manList.add(itemPit);
+            }
+
+            //女厕坑位
+            for (int i = womanSitIndexStart; i <= womanSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.womanList.add(itemPit);
+            }
+
+            //残卫坑位
+            for (int i = disabledSitIndexStart; i <= disabledSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.disabledList.add(itemPit);
+            }
+
+            //残卫便池
+            for (int i = disabledStandIndexStart; i <= disabledStandIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 1;
+                bus485Pit.disabledList.add(itemPit);
+            }
+
+            //冲水设备
+            for (int i = manWashIndexStart; i <= manWashIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 2;
+                bus485Pit.manWashList.add(itemPit);
+            }
+            for (int i = womanWashIndexStart; i <= womanWashIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 2;
+                bus485Pit.womanWashList.add(itemPit);
+            }
+            for (int i = disabledWashIndexStart; i <= disabledWashIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 2;
+                bus485Pit.disabledWashList.add(itemPit);
+            }
+
+            //气体传感器设备
+            for (int i = manGasIndexStart; i <= manGasIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 3;
+                bus485Pit.manGasList.add(itemPit);
+            }
+            for (int i = womanGasIndexStart; i <= womanGasIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 3;
+                bus485Pit.womanGasList.add(itemPit);
+            }
+            for (int i = disabledGasIndexStart; i <= disabledGasIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 3;
+                bus485Pit.disabledGasList.add(itemPit);
+            }
+
+
+            return readIndex;
+        }
+
+
+        /**
+         * 解析index=2
+         * 简化版：只显示蹲位有人无人、正常异常
+         *
+         * @param msg
+         * @param readIndex
+         * @param bus485Pit
+         * @return
+         */
+        private static int buildDetailAllPit(byte[] msg, int readIndex, Bus485Pit bus485Pit) {
+
+            int manSitIndexStart = 0;
+            int manSitIndexEnd = 59;
+
+            int womanSitIndexStart = 60;
+            int womanSitIndexEnd = 119;
+
+            int disabledSitIndexStart = 120;
+            int disabledSitIndexEnd = 129;
+
+
+            bus485Pit.manDetailList = new ArrayList<>(MAX_PIT);
+            bus485Pit.womanDetailList = new ArrayList<>(MAX_PIT);
+            bus485Pit.disabledDetailList = new ArrayList<>(MAX_PIT);
+
+
+            List<ItemPit> tempList = new ArrayList<>(255);
+
+            //0-219,共220个设备，包括蹲位便池、冲水、气体传感器数据
+            for (int i = manSitIndexStart; i <= disabledSitIndexEnd; i++) {
+                tempList.add(buildDetailItemPit(msg, readIndex));
+                readIndex += 2;
+            }
+
+            //男厕坑位
+            for (int i = manSitIndexStart; i <= manSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.manDetailList.add(itemPit);
+            }
+
+            //女厕坑位
+            for (int i = womanSitIndexStart; i <= womanSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.womanDetailList.add(itemPit);
+            }
+
+            //残卫坑位
+            for (int i = disabledSitIndexStart; i <= disabledSitIndexEnd; i++) {
+                ItemPit itemPit = tempList.get(i);
+                itemPit.type = 0;
+                bus485Pit.disabledDetailList.add(itemPit);
+            }
+
+            return readIndex;
+        }
+
+
+        /**
+         * 解析index=3
+         *
+         * @param msg
+         * @param readIndex
+         * @param bus485Pit
+         * @return
+         */
+        private static int buildDetailAllGas(byte[] msg, int readIndex, Bus485Pit bus485Pit) {
+            int manGasIndexStart = 0;
+            int manGasIndexEnd = 6;
+
+            int womanGasIndexStart = 7;
+            int womanGasIndexEnd = 12;
+
+            int disabledGasIndexStart = 13;
+            int disabledGasIndexEnd = 19;
+
+
+            bus485Pit.manGasDetailList = new ArrayList<>(MAX_PIT);
+            bus485Pit.womanGasDetailList = new ArrayList<>(MAX_PIT);
+            bus485Pit.disabledGasDetailList = new ArrayList<>(MAX_PIT);
+
+            List<ItemGas> tempList = new ArrayList<>(255);
+
+            //0-19,共20个设备
+            for (int i = manGasIndexStart; i <= disabledGasIndexEnd; i++) {
+                tempList.add(buildDetailItemGas(msg, readIndex));
+                readIndex += 6;
+            }
+
+            //男厕坑位
+            for (int i = manGasIndexStart; i <= manGasIndexEnd; i++) {
+                ItemGas itemGas = tempList.get(i);
+                itemGas.type = 0;
+                bus485Pit.manGasDetailList.add(itemGas);
+            }
+
+            //女厕坑位
+            for (int i = womanGasIndexStart; i <= womanGasIndexEnd; i++) {
+                ItemGas itemGas = tempList.get(i);
+                itemGas.type = 0;
+                bus485Pit.womanGasDetailList.add(itemGas);
+            }
+
+            //残卫坑位
+            for (int i = disabledGasIndexStart; i <= disabledGasIndexEnd; i++) {
+                ItemGas itemGas = tempList.get(i);
+                itemGas.type = 0;
+                bus485Pit.disabledGasDetailList.add(itemGas);
+            }
+
+            return readIndex;
+
+
+        }
+
+
+        /**
+         * 计算清洁度，气味浓度等级的平均等级，四舍五入
+         *
+         * @param pit
+         */
+        private static void calculateLevel(Bus485Pit pit) {
+            double gasLevelSum = 0, cleanLevelSum = 0;
+            int gasCount = 0, cleanCount = 0;
+
+            //坑位清洁度详情
+            if (pit.getIndex() == 1) {
+                for (ItemPit item : pit.manList) {
+                    if (item.cleaness != -1) {
+                        cleanLevelSum += item.cleaness;
+                        cleanCount++;
+                    }
+                }
+                for (ItemPit item : pit.womanList) {
+                    if (item.cleaness != -1) {
+                        cleanLevelSum += item.cleaness;
+                        cleanCount++;
+                    }
+                }
+                for (ItemPit item : pit.disabledList) {
+                    if (item.cleaness != -1) {
+                        cleanLevelSum += item.cleaness;
+                        cleanCount++;
+                    }
+                }
+
+
+                for (ItemPit item : pit.manGasList) {
+                    if (item.gasLevel != -1) {
+                        gasLevelSum += item.gasLevel;
+                        gasCount++;
+                    }
+                }
+                for (ItemPit item : pit.womanGasList) {
+                    if (item.gasLevel != -1) {
+                        gasLevelSum += item.gasLevel;
+                        gasCount++;
+                    }
+                }
+                for (ItemPit item : pit.disabledGasList) {
+                    if (item.gasLevel != -1) {
+                        gasLevelSum += item.gasLevel;
+                        gasCount++;
+                    }
+                }
+
+                pit.gasLevelStr = level2Str((int) Math.round(gasLevelSum / gasCount));
+                pit.cleanessLevelStr = level2Str((int) Math.round(cleanLevelSum / cleanCount));
+            }
+        }
+
+
+    }
+
+
+    /**
+     * 对应 12 Byte 的单个坑位数据
+     */
+    public static class ItemPit {
+
+
+        /**
+         * 有人没人：true有人，false无人
+         */
+        public boolean used;
+
+        /**
+         * 是否正常工作：true正常，false异常
+         */
+        public boolean work;
+
+
+        /**
+         * 清洁度等级
+         * 0 - 25% - 50% - 75%
+         * <p>
+         * -1：无效
+         */
+        public int cleaness = -1;
+
+        /**
+         * 气味等级
+         * 0 - 25% - 50% - 75%
+         * <p>
+         * -1：无效
+         */
+        public int gasLevel = -1;
+
+        /**
+         * 污物位置：
+         * -1 数据无效
+         * 0x00 -> 0 无污物
+         * 0x01 -> 1 坑内有污物
+         * 0x02 -> 2 坑外有污物
+         */
+        public int ordurePoision = -1;
+        /**
+         * 污物类型：
+         * -1 数据无效
+         * 0x00 -> 0 无污物
+         * 0x01 -> 1 纸屑
+         * 0x02 -> 2 烟头
+         */
+        public int ordureType = -1;
+
+        /**
+         * 0：蹲位
+         * 1：便池
+         * 2: 冲水设备
+         * 3: 气体传感器设备
+         */
+        public int type = 0;
+
+
+    }
+
+    /**
+     * 对应 6 Byte 的当个气体探测器的值
+     */
+    public static class ItemGas {
+        public int temperature;
+        public int humidity;
+        public int NH3;
+        public int H2S;
+        public int value;
+
+
+        /**
+         * 0：蹲位
+         * 1：便池
+         * 2: 冲水设备
+         * 3: 气体传感器设备
+         */
+        public int type = 0;
+
+        public int save;
+    }
+
+
+    /**
+     * 对应 10 Byte 的公共数据部分
+     */
+    public static class ItemCommon {
+        public int version;
+        public int hostId;
+
+        public int numManSit;
+        public int numManStand;
+
+        public int numWomanSit;
+
+        public int numDisabledSit;
+
+        public int numDisabledStand;
+
+        public int numManGas;
+        public int numWomanGas;
+        public int numDisabledGas;
+
+        public int numManPitWash;
+        public int numWomanPitWash;
+        public int numDisabledPitWash;
+        public int numManRoadWash;
+        public int numWomanRoadWash;
+        public int numDisabledRoadWash;
+
+        public static ItemCommon buildEmptyInstance() {
+            return new ItemCommon();
+        }
+
+
+    }
+
+}

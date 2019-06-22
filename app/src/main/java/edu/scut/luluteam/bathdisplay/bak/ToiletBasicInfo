@@ -1,0 +1,97 @@
+package edu.scut.luluteam.bathdisplay.model;
+
+import com.google.gson.Gson;
+
+import java.io.UnsupportedEncodingException;
+
+import edu.scut.luluteam.bathdisplay.constant.MsgConstant;
+import edu.scut.luluteam.bathdisplay.utils.ByteUtil;
+import edu.scut.luluteam.bathdisplay.utils.TransHelper;
+
+/**
+ * 厕所基本信息,采集卡请求，服务器回应，然后发给下位机PC
+ *
+ * @author Guan
+ */
+@Deprecated
+public class ToiletBasicInfo {
+    //1 byte
+    private static final byte msgType = MsgConstant.msgType_toilet_basic;
+    //8 byte
+    public String toiletId;
+    //9 byte
+    private String cid;
+    //60 byte
+    private String toiletName;
+
+    public ToiletBasicInfo(String toiletId) {
+        this.toiletId = toiletId;
+    }
+
+    public ToiletBasicInfo(String toiletId, String cid, String toiletName) {
+        this.toiletId = toiletId;
+        this.cid = cid;
+        this.toiletName = toiletName;
+    }
+
+    public byte[] getBytes() {
+        byte[] result = new byte[78];
+        result[0] = msgType;
+        int index = 1;
+        byte[] toiletIdBytes = TransHelper.getToiletIdBytes(toiletId);
+        System.arraycopy(toiletIdBytes, 0, result, index, 8);
+        index += 8;
+        byte[] cityId = TransHelper.getCityIdBytes(cid.substring(2, 11));
+        System.arraycopy(cityId, 0, result, index, 9);
+        index += 9;
+        try {
+            byte[] toiletNameBytes = new byte[60];
+            if (toiletName.length() > 20) {
+                toiletName = toiletName.substring(0, 20);
+            }
+            byte[] toiletNameBytesTmp = toiletName.getBytes("UTF-8");
+            if (toiletNameBytesTmp.length < 60) {
+                System.arraycopy(toiletNameBytesTmp, 0, toiletNameBytes, 0, toiletNameBytesTmp.length);
+                for (int i = toiletNameBytesTmp.length; i < 60; i++) {
+                    //用空格进行填充
+                    toiletNameBytes[i] = 0x20;
+                }
+            } else {
+                System.arraycopy(toiletNameBytesTmp, 0, toiletNameBytes, 0, 60);
+            }
+            System.arraycopy(toiletNameBytes, 0, result, index, 60);
+
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
+        return result;
+    }
+
+    /**
+     * 解析采集卡发送上来的请求
+     */
+    public static class Builder {
+        public static ToiletBasicInfo parseByte(byte[] msg) {
+            int offset = 1;
+            String toiletId = TransHelper.getToiletId(msg, offset, 8);
+            offset += 8;
+            String cid = TransHelper.getCityId(msg, offset, 9);
+            offset += 9;
+            //60个字节怎么解析成中文？
+            byte[] toiletNameBytes = new byte[60];
+            System.arraycopy(msg, offset, toiletNameBytes, 0, 60);
+            String toiletName = "";
+            try {
+                toiletName = new String(ByteUtil.byte2string(toiletNameBytes).getBytes("ISO-8859-1"), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            ToiletBasicInfo toiletBasicInfo = new ToiletBasicInfo(toiletId, cid, toiletName);
+            return toiletBasicInfo;
+        }
+    }
+
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
+}

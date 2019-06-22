@@ -1,0 +1,9 @@
+1、修改constant包中的AppConstant文件
+    pitNumData设置合适的值：对于个性化页面需要指定默认的值，对于通用页面指定为0即可
+    修改enableCommonWebView变量：true为通用页面，false为定制化页面
+    修改WebViewUrl为对应的文件
+
+2、修改DisneyFragment中加载的layout
+    对于通用页面，加载的layout为R.layout.fragment_display
+    对于克劳迪个性化页面，加载的layout为R.layout.fragment_display_v2
+    对于克劳迪个性化页面，加载的layout为???????

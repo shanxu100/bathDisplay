@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context=".setting.SettingFragment"
+
+    >
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rl_server"
+        android:layout_alignStart="@+id/rl_server"
+        android:layout_marginBottom="30px">
+
+        <TextView
+            android:id="@+id/port_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:text="串口："
+            android:textColor="@color/white"
+            android:textSize="40px" />
+
+        <TextView
+            android:id="@+id/tv_port"
+            android:layout_width="300px"
+            android:layout_height="50px"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/port_temp"
+            android:background="@color/white"
+            android:gravity="center"
+            android:text="请选择串口"
+            android:textColor="@color/gray" />
+
+        <Button
+            android:id="@+id/btn_choose_port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:layout_toRightOf="@+id/tv_port"
+            android:gravity="center"
+            android:text="查找"
+
+            />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_server"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+
+        >
+
+        <TextView
+            android:id="@+id/server_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:text="服务器地址："
+            android:textColor="@color/white"
+            android:textSize="40px" />
+
+        <EditText
+            android:id="@+id/et_server_1"
+            android:layout_width="100px"
+            android:layout_height="70px"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/server_temp"
+            android:background="@color/white"
+            android:gravity="center_horizontal"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <EditText
+            android:id="@+id/et_server_2"
+            android:layout_width="100px"
+            android:layout_height="70px"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:layout_toRightOf="@+id/et_server_1"
+            android:background="@color/white"
+            android:gravity="center_horizontal"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <EditText
+            android:id="@+id/et_server_3"
+            android:layout_width="100px"
+            android:layout_height="70px"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:layout_toRightOf="@+id/et_server_2"
+            android:background="@color/white"
+            android:gravity="center_horizontal"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <EditText
+            android:id="@+id/et_server_4"
+            android:layout_width="100px"
+            android:layout_height="70px"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:layout_toRightOf="@+id/et_server_3"
+            android:background="@color/white"
+            android:gravity="center_horizontal"
+            android:inputType="number"
+            android:maxLength="3" />
+
+        <TextView
+            android:id="@+id/maohao_temp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/et_server_4"
+            android:background="@color/transparent"
+            android:gravity="center_horizontal"
+            android:text="  :  "
+            android:textColor="@color/white"
+            android:textSize="60px"
+
+            />
+
+        <EditText
+            android:id="@+id/et_server_5"
+            android:layout_width="160px"
+            android:layout_height="70px"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/maohao_temp"
+            android:background="@color/white"
+            android:gravity="center_horizontal"
+            android:inputType="number"
+            android:maxLength="5"
+
+            />
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:layout_toRightOf="@id/et_server_5"
+            android:gravity="center"
+            android:text="确定"
+
+            />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_water"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rl_server"
+        android:layout_alignStart="@+id/rl_server"
+        android:layout_marginTop="30px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:text="水表校正值："
+            android:textColor="@color/white"
+            android:textSize="40px" />
+
+        <EditText
+            android:id="@+id/et_water_adjusted_value"
+            android:layout_width="160px"
+            android:layout_height="70px"
+            android:background="@color/white"
+            android:gravity="center"
+            android:inputType="numberSigned|numberDecimal"
+            />
+
+        <Button
+            android:id="@+id/btn_water_adjusted_value_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:gravity="center"
+            android:text="确定"
+
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_set_pit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_water"
+        android:layout_alignStart="@+id/ll_water"
+        android:layout_marginTop="30px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:text="坑位数量："
+            android:textColor="@color/white"
+            android:textSize="40px" />
+
+        <Button
+            android:id="@+id/btn_pit_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:gravity="center"
+            android:text="设置"
+
+            />
+    </LinearLayout>
+
+    <!--设置名称-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_water"
+        android:layout_toRightOf="@id/ll_set_pit"
+        android:layout_marginTop="30px"
+        android:layout_marginLeft="40px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:text="厕所名称及地址:"
+            android:textColor="@color/white"
+            android:textSize="40px" />
+
+        <Button
+            android:id="@+id/btn_address_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40px"
+            android:gravity="center"
+            android:text="设置"
+
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="50px"
+        android:layout_marginBottom="50px"
+        android:text="返回" />
+
+
+</RelativeLayout>

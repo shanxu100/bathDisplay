@@ -1,0 +1,119 @@
+package edu.scut.luluteam.bathdisplay.model;
+
+import com.google.gson.Gson;
+
+import edu.scut.luluteam.bathdisplay.constant.MsgConstant;
+import edu.scut.luluteam.bathdisplay.utils.ByteUtil;
+import edu.scut.luluteam.bathdisplay.utils.TransHelper;
+
+
+/**
+ * Server 向  采集卡 发送的天气数据
+ */
+@Deprecated
+public class WeatherInfo {
+
+    //1 byte
+    private static final byte msgType = MsgConstant.msgType_weather;
+    //8 byte
+    public String toiletId;
+    //9 byte
+    private String cid;
+    //6 byte
+    private String time;
+    //1 byte
+    private int tmp;
+    //2 byte
+    private int condCode;
+
+    private String city;
+
+    private String condTxt;
+
+    public WeatherInfo(String toiletId, String cid, String time, int tmp, int condCode) {
+        this.toiletId = toiletId;
+        this.cid = cid;
+        this.time = time;
+        this.tmp = tmp;
+        this.condCode = condCode;
+//        try {
+//            this.time = TimeUtil.getTime(time, "yyyy-MM-dd HH:mm", "yyMMddHHmmss");
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            this.time = "000000000000";
+//        }
+    }
+
+    public WeatherInfo(String toiletId) {
+        this.toiletId = toiletId;
+    }
+
+    public String getCid() {
+        return cid;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCondTxt() {
+        return condTxt;
+    }
+
+    public void setCondTxt(String condTxt) {
+        this.condTxt = condTxt;
+    }
+
+
+    public byte[] getBytes() {
+        byte[] bytes = new byte[27];
+        bytes[0] = msgType;
+        byte[] toiletIdBytes = TransHelper.getToiletIdBytes(toiletId);
+        System.arraycopy(toiletIdBytes, 0, bytes, 1, 8);
+
+        byte[] cityId = TransHelper.getCityIdBytes(cid.substring(2, 11));
+        System.arraycopy(cityId, 0, bytes, 9, 9);
+
+        byte[] time = TransHelper.getSystemTime(this.time);
+        System.arraycopy(time, 0, bytes, 18, 6);
+
+        bytes[24] = TransHelper.getTempByte(tmp);
+
+        byte[] condByte = TransHelper.getCondByte(condCode);
+        System.arraycopy(condByte, 0, bytes, 25, 2);
+
+        return bytes;
+    }
+
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
+
+
+    /**
+     * 解析采集卡发送上来的请求
+     */
+    public static class Builder {
+
+        public static WeatherInfo parseByte(byte[] msg) {
+            int offset = 1;
+            String toiletId = TransHelper.getToiletId(msg, offset, 8);
+            offset += 8;
+            String cid = TransHelper.getCityId(msg, offset, 9);
+            offset += 9;
+            String time = TransHelper.getRecordInfoTime(msg, offset, 6);
+            offset += 6;
+            //可能要改，因为是有符号数
+            int tmp = TransHelper.getIntValue(msg, offset, 1);
+            offset += 1;
+            int condCode = ByteUtil.toInteger(msg, offset, 2);
+            WeatherInfo weatherInfo = new WeatherInfo(toiletId, cid, time, tmp, condCode);
+            return weatherInfo;
+        }
+    }
+
+}

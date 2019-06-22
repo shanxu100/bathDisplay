@@ -1,0 +1,219 @@
+package edu.scut.luluteam.bathdisplay.display;
+
+import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import edu.scut.luluteam.bathdisplay.manager.App;
+import edu.scut.luluteam.bathdisplay.manager.ToastManager;
+import edu.scut.luluteam.bathdisplay.model.BaseData;
+import edu.scut.luluteam.bathdisplay.utils.ByteUtil;
+import edu.scut.luluteam.bathdisplay.utils.SharedPreferencesUtil;
+import edu.scut.luluteam.bathdisplay.utils.device.DeviceAdminHelper;
+import edu.scut.luluteam.serialportlibrary.Device;
+import edu.scut.luluteam.serialportlibrary.SerialPortFinder;
+import edu.scut.luluteam.serialportlibrary.SerialPortManager;
+import edu.scut.luluteam.serialportlibrary.listener.OnOpenSerialPortListener;
+import edu.scut.luluteam.serialportlibrary.listener.OnSerialPortDataListener;
+
+/**
+ * @author Guan
+ * @date Created on 2019/1/14
+ */
+public class DisplayPresenter implements DisplayContract.Presenter, OnOpenSerialPortListener, OnSerialPortDataListener {
+
+    private DisplayContract.View mView;
+    private SerialPortManager mSerialPortManager;
+    private SerialPortFinder serialPortFinder;
+    private ArrayList<Device> devices = null;
+    Device device=null;
+
+    private static final String TAG = "DisplayPresenter";
+
+
+    public DisplayPresenter(DisplayContract.View mView) {
+        this.mView = mView;
+        this.mView.setPresenter(this);
+    }
+
+
+    @Override
+    public void subscribe() {
+        EventBus.getDefault().register(this);
+        //这里App要获取root权限，然后后续工作才能展开（暂缓）
+        mSerialPortManager = new SerialPortManager();
+        serialPortFinder = new SerialPortFinder();
+//        findSerialPort();
+        openSerialPort();
+    }
+
+    @Override
+    public void unsubscribe() {
+        EventBus.getDefault().unregister(this);
+        closeSerialPort();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventBusMessage(BaseData baseData) {
+//        mView.updateShowFrame(baseData.getFrameStr());
+
+        mView.updateWebview(baseData.getFrameStr());
+    }
+
+    /**
+     * 这里进行一些初始化的操作
+     */
+    @Override
+    public void loadData() {
+
+
+    }
+
+    /**
+     * 查找所有串口
+     */
+    @Override
+    public List<Device> findSerialPort() {
+
+        devices = serialPortFinder.getDevices();
+
+        StringBuilder sb = new StringBuilder();
+        for (Device s : devices) {
+            sb.append(s.getName()).append("\n");
+        }
+        mView.updateSampleText(sb.toString());
+        return devices;
+    }
+
+    @Override
+    public void activeAdmin(Context context) {
+        DeviceAdminHelper helper = new DeviceAdminHelper();
+        helper.activeAdmin(context);
+    }
+
+    /**
+     * 打开串口
+     *
+     * @param device
+     */
+    @Override
+    public void openSerialPort(Device device) {
+        Log.i(TAG, "onCreate: device = " + device);
+        if (null == device) {
+            return;
+        }
+        // 打开串口
+        boolean openSerialPort = mSerialPortManager.setOnOpenSerialPortListener(this)
+                .setOnSerialPortDataListener(this)
+                .openSerialPort(device.getFile(), 115200);
+    }
+
+    @Override
+    public void openSerialPort() {
+        Log.i(TAG, "打开第一个device");
+//        if (devices == null || devices.size() == 0) {
+//            return;
+//        }
+        String path= SharedPreferencesUtil.getString(App.getAppContext(),"path");
+        if(TextUtils.isEmpty(path)||path==null){
+            device = new Device("name", "root", new File("/dev/ttyS1"));
+            SharedPreferencesUtil.putString(App.getAppContext(),"path","/dev/ttyS1");
+            path="/dev/ttyS1";
+        }else {
+            device = new Device("name", "root", new File(path));
+        }
+        boolean openSerialPort = mSerialPortManager.setOnOpenSerialPortListener(this)
+                .setOnSerialPortDataListener(this)
+                .openSerialPort(device.getFile(), 115200);
+        ToastManager.newInstance("打开的串口路径为: " +path).show();
+    }
+
+    @Override
+    public void closeSerialPort() {
+        if (mSerialPortManager != null) {
+            mSerialPortManager.closeSerialPort();
+        }
+    }
+
+    @Override
+    public void sendTestMsg() {
+        if (mSerialPortManager != null) {
+            byte[] testBytes = {0x5E, 0x00, 0x03, 0x00, 0x01, 0x02, 0x15, (byte) 0xA4, 0x24};
+            mSerialPortManager.sendBytes(testBytes);
+        }
+    }
+
+    /**
+     * 串口打开成功
+     *
+     * @param device 串口
+     */
+    @Override
+    public void onSuccess(File device) {
+        ToastManager.newInstance(String.format("串口 [%s] 打开成功", device.getPath()))
+                .isLog(TAG).show();
+
+    }
+
+    /**
+     * 串口打开失败
+     *
+     * @param device 串口
+     * @param status status
+     */
+    @Override
+    public void onFail(File device, Status status) {
+        switch (status) {
+            case NO_READ_WRITE_PERMISSION:
+                Log.e(TAG, device.getPath() + "没有读写权限");
+                break;
+            case OPEN_FAIL:
+            default:
+                Log.e(TAG, device.getPath() + "串口打开失败");
+                break;
+        }
+    }
+
+    /**
+     * 这个方法不断地被调用，表示成功接到数据。
+     * 每次调用都会有一个byte[] 数组过来
+     * 注意：这里的是子线程，不是主线程
+     *
+     * @param bytes 接收到的数据
+     */
+    @Override
+    public void onDataReceived(byte[] bytes) {
+        ToastManager.newInstance("onDataReceived [ String ]: " + ByteUtil.byte2hex(bytes)).show();
+        final byte[] finalBytes = bytes;
+
+        edu.scut.luluteam.bathdisplay.manager.frame.guan.FrameManager.put(bytes);
+
+        //bug:
+// 测试帧 01 01 01 01 01 01 16 0A 04 1E 00 08 01 01 01 01 01 01 01 01 16 0A 04 1E 00 08 01 01 01 01 01 01 01 01 16 0A 04 03 1F 1E 00 08 01 01
+//        try {
+//            edu.scut.luluteam.bathdisplay.manager.frame.sl.FrameManager.put(finalBytes);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    /**
+     * @param bytes 发送的数据
+     */
+    @Override
+    public void onDataSent(byte[] bytes) {
+        Log.i(TAG, "onDataSent [ byte[] ]: " + Arrays.toString(bytes));
+        Log.i(TAG, "onDataSent [ String ]: " + new String(bytes));
+        final byte[] finalBytes = bytes;
+        Log.e(TAG, String.format("发送\n%s", new String(finalBytes)));
+    }
+}
